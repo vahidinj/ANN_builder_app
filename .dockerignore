@@ -1,0 +1,57 @@
+# Ignore git and VCS
+.git
+
+# Python bytecode and cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment and OS files
+.env
+.DS_Store
+
+# Jupyter and notebook checkpoints
+*.ipynb
+.ipynb_checkpoints/
+notebooks/
+
+# Data, models, and logs
+data/
+models/
+logs/
+
+# Reports, figures, and docs
+reports/
+reports/figures/
+docs/
+
+# VSCode and IDE
+.vscode/
+.idea/
+*.code-workspace
+
+# Streamlit
+.streamlit/
+
+# Docker artifacts
+Dockerfile
+docker-compose.yml
+
+# Misc
+*.log
+*.tmp
+*.out
+*.test
+
+# References and interim data
+references/
+data/interim/
+data/external/
+data/processed/
+data/raw/
+
+# Ignore test outputs
+*.test
+
+# Remove duplicate patterns and improve organization
