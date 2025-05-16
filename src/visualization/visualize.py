@@ -253,21 +253,49 @@ def metrics_bar_chart(class_report: dict) -> go.Figure:
     Returns:
     - fig: Plotly figure object for the bar chart.
     """
+    import pandas as pd
+    import plotly.graph_objects as go
 
     metrics_df = pd.DataFrame(class_report).transpose()
-    metrics_df = metrics_df[["precision", "recall", "f1-score"]].iloc[:-3]
+    # Remove 'accuracy', 'macro avg', 'weighted avg' rows
+    metrics_df = metrics_df.loc[
+        ~metrics_df.index.isin(["accuracy", "macro avg", "weighted avg"])
+    ]
+    metrics_df = metrics_df[["precision", "recall", "f1-score"]]
+
+    # Sort classes if possible
+    try:
+        metrics_df = metrics_df.sort_index(key=lambda x: x.astype(str))
+    except Exception:
+        pass
+
+    # colors = {"precision": "#1f77b4", "recall": "#ff7f0e", "f1-score": "#2ca02c"}
 
     fig = go.Figure()
-
     for metric in ["precision", "recall", "f1-score"]:
-        fig.add_trace(go.Bar(x=metrics_df.index, y=metrics_df[metric], name=metric))
+        fig.add_trace(
+            go.Bar(
+                x=metrics_df.index.astype(str),
+                y=metrics_df[metric],
+                name=metric.capitalize(),
+                # marker_color=colors[metric],
+                text=[f"{v:.2f}" for v in metrics_df[metric]],
+                textposition="outside",
+                hovertemplate=f"<b>%{{x}}</b><br>{metric.capitalize()}: %{{y:.3f}}<extra></extra>",
+            )
+        )
 
     fig.update_layout(
-        title="Class-wise Metrics",
+        title=dict(
+            text="Class-wise Metrics",
+            font=dict(size=16, family="Arial", color="black"),
+        ),
         xaxis_title="Class",
         yaxis_title="Score",
+        yaxis=dict(range=[0, 1.1], showgrid=True, zeroline=False),
         barmode="group",
         legend_title="Metric",
+        # margin=dict(l=40, r=40, t=40, b=40),
     )
 
     return fig
@@ -284,6 +312,14 @@ def cm_map(data_cm: np.array, class_labels: list) -> go.Figure:
     Returns:
     - fig: Plotly figure object for the confusion matrix.
     """
+
+    data_cm = np.array(data_cm)
+    cm_percent = data_cm / data_cm.sum(axis=1, keepdims=True) * 100
+    annotations = [
+        [f"{count}<br>{pct:.1f}%" for count, pct in zip(row_counts, row_pcts)]
+        for row_counts, row_pcts in zip(data_cm, cm_percent)
+    ]
+
     fig = go.Figure(
         data=go.Heatmap(
             z=data_cm,
@@ -291,25 +327,36 @@ def cm_map(data_cm: np.array, class_labels: list) -> go.Figure:
             y=class_labels,
             colorscale="Blues",
             showscale=True,
-            text=data_cm,
+            text=annotations,
             texttemplate="%{text}",
+            hovertemplate="True: %{y}<br>Predicted: %{x}<br>Count: %{z}<extra></extra>",
+            colorbar=dict(title="Count"),
+            reversescale=False,
         )
     )
 
     fig.update_layout(
-        title="Confusion Matrix",
+        title=dict(
+            text="Confusion Matrix",
+            font=dict(size=16, family="Arial", color="black"),
+        ),
         xaxis_title="Predicted Labels",
         yaxis_title="True Labels",
         xaxis=dict(
             tickmode="array",
-            tickvals=list(range(len(class_labels))),
+            tickvals=class_labels,
             ticktext=class_labels,
+            side="top",
+            tickfont=dict(size=12),
         ),
         yaxis=dict(
             tickmode="array",
-            tickvals=list(range(len(class_labels))),
+            tickvals=class_labels,
             ticktext=class_labels,
+            autorange="reversed",
+            tickfont=dict(size=12),
         ),
+        # margin=dict(l=40, r=40, t=40, b=40),
     )
 
     return fig
@@ -329,8 +376,8 @@ def plot_neural_network(
     Returns:
         matplotlib.figure.Figure: The generated neural network plot.
     """
-    # Number of features in the input layer
-    input_units = df.shape[1] - 1  # Number of columns in the DataFrame
+
+    input_units = df.shape[1] - 1
 
     fig, ax = plt.subplots(figsize=(8, 4))
     layer_positions = (
@@ -338,7 +385,6 @@ def plot_neural_network(
     )
     max_neurons = max(input_units, max(layers_units, default=0), output_units)
 
-    # Plot neurons
     for i, layer in enumerate([input_units] + layers_units + [output_units]):
         for j in range(layer):
             ax.scatter(
@@ -385,30 +431,35 @@ def plot_error_metrics(mse, mae, r2) -> go.Figure:
     Returns:
         plotly.graph_objects.Figure: The generated bar chart.
     """
-    # Prepare the data
     metrics = {
         "Metric": ["Mean Squared Error", "Mean Absolute Error", "R² Score"],
         "Value": [mse, mae, r2],
+        "Short": ["MSE", "MAE", "R²"],
+        "Color": ["#1f77b4", "#ff7f0e", "#2ca02c"],
     }
 
-    # Create the bar chart
     fig = px.bar(
         metrics,
         x="Metric",
         y="Value",
-        title="Regression Error Metrics",
         text="Value",
+        color="Metric",
+        color_discrete_map={
+            # "Mean Squared Error": "#1f96b4",
+            # "Mean Absolute Error": "#ff7f0e",
+            "R² Score": "#33e833",
+        },
         labels={"Value": "Metric Value", "Metric": "Error Metric"},
+        title="Regression Error Metrics",
     )
 
-    # Update the bar chart traces
     fig.update_traces(
-        texttemplate="%{text:.2f}",
+        texttemplate="%{text:.3f}",
         textposition="outside",
-        marker=dict(color=["blue", "orange", "green"]),
+        hovertemplate="<b>%{x}</b><br>Value: %{y:.3f}<extra></extra>",
+        showlegend=False,
     )
 
-    # Update layout for consistency
     fig.update_layout(
         title=dict(
             text="Regression Error Metrics",
@@ -423,16 +474,9 @@ def plot_error_metrics(mse, mae, r2) -> go.Figure:
             title="Value",
             showgrid=True,
             zeroline=False,
+            rangemode="tozero",
         ),
-        legend=dict(
-            title="Legend",
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="right",
-            x=1,
-        ),
-        margin=dict(l=40, r=40, t=40, b=40),
+        # margin=dict(l=40, r=40, t=40, b=40),
     )
 
     return fig
@@ -449,109 +493,142 @@ def plot_predicted_vs_actual(y_test, y_pred) -> go.Figure:
     Returns:
         plotly.graph_objects.Figure: The generated interactive plot.
     """
+
     y_test = np.ravel(y_test)
     y_pred = np.ravel(y_pred)
+    residuals = np.abs(y_test - y_pred)
 
-    df = pd.DataFrame({"Actual": y_test, "Predicted": y_pred})
+    df = pd.DataFrame(
+        {
+            "Actual": y_test,
+            "Predicted": y_pred,
+            "Residual": residuals,
+            "Index": np.arange(len(y_test)),
+        }
+    )
+
+    r2 = np.corrcoef(y_test, y_pred)[0, 1] ** 2
+    mae = np.mean(residuals)
+    rmse = np.sqrt(np.mean((y_test - y_pred) ** 2))
 
     fig = px.scatter(
         df,
         x="Actual",
         y="Predicted",
-        title="Predicted vs. Actual Values",
+        color="Residual",
+        color_continuous_scale="Viridis",
+        hover_data=["Residual", "Index"],
+        title=f"Predicted vs. Actual Values<br>R²={r2:.3f}, MAE={mae:.3f}, RMSE={rmse:.3f}",
         labels={"Actual": "Actual Values", "Predicted": "Predicted Values"},
-        opacity=0.6,
+        opacity=0.7,
     )
 
-    fig.add_shape(
-        type="line",
-        x0=df["Actual"].min(),
-        y0=df["Actual"].min(),
-        x1=df["Actual"].max(),
-        y1=df["Actual"].max(),
-        line=dict(color="red", dash="dash"),
+    min_val = min(df["Actual"].min(), df["Predicted"].min())
+    max_val = max(df["Actual"].max(), df["Predicted"].max())
+    fig.add_trace(
+        go.Scatter(
+            x=[min_val, max_val],
+            y=[min_val, max_val],
+            mode="lines",
+            line=dict(color="red", dash="dash"),
+            name="Ideal Fit (y = x)",
+            showlegend=True,
+        )
     )
 
     fig.update_layout(
         title=dict(
-            text="Predicted vs. Actual Values",
+            text=(
+                "Predicted vs. Actual Values"
+                f"<br><span style='font-size:12px'>R²={r2:.3f}, MAE={mae:.3f}, RMSE={rmse:.3f}</span>"
+            ),
             font=dict(size=16, family="Arial", color="black"),
         ),
         xaxis=dict(
             title="Actual Values",
-            showgrid=True,
-            zeroline=False,
+            showgrid=False,
+            zeroline=True,
         ),
         yaxis=dict(
             title="Predicted Values",
             showgrid=True,
-            zeroline=False,
+            zeroline=True,
         ),
         legend=dict(
             title="Legend",
-            orientation="h",
+            orientation="v",
             yanchor="bottom",
-            y=1.02,
+            y=1,
             xanchor="right",
             x=1,
         ),
-        # margin=dict(l=40, t=40, b=40),
-    )
-
-    fig.add_trace(
-        go.Scatter(
-            x=[None],
-            y=[None],
-            mode="lines",
-            line=dict(color="red", dash="dash"),
-            name="Ideal Fit (y = x)",
-        )
+        # margin=dict(l=40, t=40, b=40, r=40),
+        coloraxis_colorbar=dict(title="|Residual|"),
     )
 
     return fig
 
 
-def plot_cumulative_gain(y_test, y_pred) -> go.Figure:
+def plot_cumulative_gain(
+    y_test: np.ndarray,
+    y_pred: np.ndarray,
+    model_color: str = "blue",
+    baseline_color: str = "red",
+) -> go.Figure:
     """
     Plots the cumulative gain chart for regression tasks using Plotly.
 
     Args:
         y_test (array-like): Actual target values.
         y_pred (array-like): Predicted target values.
+        model_color (str): Color for the model curve.
+        baseline_color (str): Color for the baseline curve.
 
     Returns:
         plotly.graph_objects.Figure: The generated cumulative gain chart.
-    """
-    # Sort predictions and corresponding actual values
-    sorted_indices = np.argsort(y_pred)
-    y_test_sorted = np.array(y_test)[sorted_indices]
 
-    # Calculate cumulative actual and predicted proportions
+    Note:
+        Cumulative gain charts are more common for classification tasks.
+        For regression, this plot shows the cumulative proportion of actual values
+        as you move through the sorted predictions.
+    """
+    y_test = np.asarray(y_test)
+    y_pred = np.asarray(y_pred)
+
+    if y_test.shape != y_pred.shape:
+        raise ValueError("y_test and y_pred must have the same shape.")
+    if y_test.size == 0:
+        raise ValueError("Input arrays must not be empty.")
+    if not np.issubdtype(y_test.dtype, np.number) or not np.issubdtype(
+        y_pred.dtype, np.number
+    ):
+        raise ValueError("Inputs must be numeric.")
+
+    sorted_indices = np.argsort(y_pred)
+    y_test_sorted = y_test[sorted_indices]
+
     cumulative_actual = np.cumsum(y_test_sorted) / np.sum(y_test_sorted)
     cumulative_predicted = np.linspace(0, 1, len(y_test_sorted))
 
-    # Create the cumulative gain chart
     fig = go.Figure()
 
-    # Add the model's cumulative gain curve
     fig.add_trace(
         go.Scatter(
             x=cumulative_predicted,
             y=cumulative_actual,
             mode="lines",
             name="Model (Cumulative Gain)",
-            line=dict(color="blue", width=2),
+            line=dict(color=model_color, width=2),
         )
     )
 
-    # Add the baseline (random) curve
     fig.add_trace(
         go.Scatter(
             x=[0, 1],
             y=[0, 1],
             mode="lines",
             name="Baseline (Random)",
-            line=dict(color="red", dash="dash", width=2),
+            line=dict(color=baseline_color, dash="dash", width=2),
         )
     )
 
@@ -562,23 +639,25 @@ def plot_cumulative_gain(y_test, y_pred) -> go.Figure:
         ),
         xaxis=dict(
             title="Cumulative Predicted Proportion",
-            showgrid=True,
-            zeroline=False,
+            showgrid=False,
+            zeroline=True,
+            range=[0, 1],
         ),
         yaxis=dict(
             title="Cumulative Actual Proportion",
             showgrid=True,
-            zeroline=False,
+            zeroline=True,
+            range=[0, 1],
         ),
         legend=dict(
             title="Legend",
-            orientation="h",
+            orientation="v",
             yanchor="bottom",
-            y=1.02,
+            y=1,
             xanchor="right",
             x=1,
         ),
-        margin=dict(l=40, r=40, t=40, b=40),
+        # margin=dict(l=40, r=40, t=40, b=40),
     )
 
     return fig

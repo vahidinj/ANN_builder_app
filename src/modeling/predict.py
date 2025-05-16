@@ -20,6 +20,10 @@ def predict(X_input: np.array, task_type: str, pred_threshold: float = None) -> 
         ann_model = pickle.load(file=file)
 
     y_pred = ann_model.predict(X_input)
+    if isinstance(y_pred, np.ndarray) and y_pred.ndim > 1 and y_pred.shape[1] == 1:
+        y_pred = y_pred.ravel()
+
+    y_pred = ann_model.predict(X_input)
     
     if task_type == 'Binary Classification':
         if pred_threshold is None:

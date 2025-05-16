@@ -223,6 +223,11 @@ def build():
                 X, y, test_size=test_size, random_state=random_state
             )
 
+            X_train = X_train.reset_index(drop=True)
+            X_test = X_test.reset_index(drop=True)
+            y_train = y_train.reset_index(drop=True)
+            y_test = y_test.reset_index(drop=True)
+
             X_train = preprocessor.fit_transform(X_train)
             X_test = preprocessor.transform(X_test)
 
@@ -466,6 +471,14 @@ def build():
                                 task_type=task_type,
                                 pred_threshold=st.session_state["model_config"]["pred_threshold"],
                             )
+                            
+                            # Ensure y_pred is 1D
+                            if isinstance(y_pred, np.ndarray) and y_pred.ndim > 1 and y_pred.shape[1] == 1:
+                                y_pred = y_pred.ravel()
+
+                            st.write(f"DEBUG: y_test shape: {y_test.shape}")
+                            st.write(f"DEBUG: y_pred shape: {y_pred.shape}")
+                            
                             st.session_state['y_pred'] = y_pred
                             
                             execution_time = time.time() - start_time
@@ -487,7 +500,7 @@ def build():
                                 mae = mean_absolute_error(y_true=y_test, y_pred=y_pred)
                                 r2 = r2_score(y_true=y_test, y_pred=y_pred)
 
-                            test_col1, test_col2 = st.columns([1, 2])
+                            test_col1, test_col2 = st.columns([1, 2.5])
 
                             with test_col1:
                                 st.subheader("📋 Key Metrics")
@@ -539,7 +552,7 @@ def build():
                                         st.plotly_chart(
                                             cm_map(
                                                 data_cm=cm, class_labels=class_labels
-                                            )
+                                            ), use_container_width=True
                                         )
 
                                     with st.expander(
@@ -547,7 +560,7 @@ def build():
                                         expanded=True,
                                     ):
                                         st.plotly_chart(
-                                            metrics_bar_chart(class_report=class_report)
+                                            metrics_bar_chart(class_report=class_report), use_container_width=True
                                         )
 
                                 elif task_type == "Regression":
@@ -555,7 +568,7 @@ def build():
                                         "Error Metrics Bar Chart", expanded=True
                                     ):
                                         st.plotly_chart(
-                                            plot_error_metrics(mse, mae, r2)
+                                            plot_error_metrics(mse, mae, r2), use_container_width=True
                                         )
 
                                     with st.expander(
@@ -564,7 +577,7 @@ def build():
                                         st.plotly_chart(
                                             plot_predicted_vs_actual(
                                                 y_test=y_test, y_pred=y_pred
-                                            )
+                                            ), use_container_width=True
                                         )
 
                                     with st.expander(
@@ -573,7 +586,7 @@ def build():
                                         st.plotly_chart(
                                             plot_cumulative_gain(
                                                 y_test=y_test, y_pred=y_pred
-                                            )
+                                            ), use_container_width=True
                                         )
                         else:
                             st.info(
