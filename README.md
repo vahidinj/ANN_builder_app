@@ -1,7 +1,9 @@
-# Artificial Neural Network Churn Prediction App
+# Neural Network Studio App
 
-A Streamlit application for exploring, visualizing, and modeling customer churn using Artificial Neural Networks (ANN).  
-Upload your data, clean and preprocess it, visualize patterns, build an ANN, and make predictions on new data—all in one interactive app.
+Build and train artificial neural networks with an intuitive Streamlit GUI. Easily upload and explore your data, fine-tune model parameters, and visualize both your data and model performance—all in one streamlined app.
+
+👉 **[Launch the app](https://vahidinj.streamlit.app)**
+
 
 ---
 
@@ -18,6 +20,11 @@ Upload your data, clean and preprocess it, visualize patterns, build an ANN, and
   - Upload new (unseen) data to make predictions with your trained model.
   - Download prediction results as a CSV file.
 - **🤖 About:** Learn what each page does and how to use the app.
+
+---
+
+![Example Neural Network Visualization](reports/figures/created_ANN.png)
+*Example: Visualizing a generated neural network with the app.*
 
 ---
 

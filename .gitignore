@@ -7,14 +7,6 @@ notebooks/
 *.ipynb
 .ipynb_checkpoints/
 
-# Reports and figures
-/reports/
-/reports/figures/
-*.png
-*.jpg
-*.jpeg
-*.svg
-
 # Logs
 *.log
 logs/
