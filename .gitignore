@@ -2,11 +2,6 @@
 /data/
 data/
 
-# Model files
-/models/
-*.h5
-*.joblib
-*.sav
 
 # Notebooks and notebook checkpoints
 notebooks/
