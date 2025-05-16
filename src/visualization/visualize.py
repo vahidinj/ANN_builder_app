@@ -94,7 +94,7 @@ def fig_histogram(df: pd.DataFrame, x: str, color: str, nbins: int) -> go.Figure
         color=color,
         nbins=nbins,
         # title=f"Distribution of {x} by {color} Status",
-        color_discrete_sequence=px.colors.qualitative.Set2,
+        # color_discrete_sequence=px.colors.qualitative.Set2,
     )
     return fig
 

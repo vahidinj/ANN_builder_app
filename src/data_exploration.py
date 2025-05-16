@@ -130,9 +130,9 @@ def data_exploration():
                 )
         tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
             [
-                "📉 Area Chart",
-                "📦 Box Plot",
                 "📊 Histogram",
+                "📦 Box Plot",
+                "📉 Area Chart",
                 "📍 Scatter Plot",
                 "🔥 Heatmap",
                 "🥧 Pi Chart",
@@ -140,32 +140,32 @@ def data_exploration():
         )
 
         with tab1:
-            st.header("📉 Area Chart")
+            st.header("📊 Histogram")
             st.markdown(
-                "Visualize trends over time or across categories using an area chart. "
-                "You must select both X and Y variables (columns) to generate the chart. "
-                "Optionally, you can group the areas by another column using the color option."
+                "Explore the distribution of a numerical variable in your dataset using a histogram. "
+                "You must select an X variable (column) to generate the chart. "
+                "Optionally, you can group the bars by another column using the **color** option."
             )
 
-            if x and y:
-                st.markdown(f"### Area Chart: `{y}` vs `{x}`")
+            if x:
+                st.markdown(f"### Histogram of `{x}`")
                 if color:
                     st.markdown(f"Grouped by `{color}`")
                 st.plotly_chart(
-                    fig_area_chart(df=df, x=x, y=y, color=color),
+                    fig_histogram(df=df, x=x, color=color, nbins=n_bins),
                     use_container_width=True,
                 )
             else:
                 st.warning(
-                    "Please select both X and Y variables (columns) to generate the area chart."
+                    "Please select an X variable (column) to generate the histogram."
                 )
 
         with tab2:
             st.header("📦 Box Plot")
             st.markdown(
                 "Analyze the distribution of a numerical variable and detect outliers using a box plot. "
-                "You must select a target variable (numerical column) to generate the chart. "
-                "Optionally, you can group the boxes by another column using the color option."
+                "You must select a **target** variable (numerical column) to generate the chart. "
+                "Optionally, you can group the boxes by another column using the **color** option."
             )
 
             if target:
@@ -185,24 +185,24 @@ def data_exploration():
                 )
 
         with tab3:
-            st.header("📊 Histogram")
+            st.header("📉 Area Chart")
             st.markdown(
-                "Explore the distribution of a numerical variable in your dataset using a histogram. "
-                "You must select an X variable (column) to generate the chart. "
-                "Optionally, you can group the bars by another column using the color option."
+                "Visualize trends over time or across categories using an area chart. "
+                "You must select both X and Y variables (columns) to generate the chart. "
+                "Optionally, you can group the areas by another column using the **color** option."
             )
 
-            if x:
-                st.markdown(f"### Histogram of `{x}`")
+            if x and y:
+                st.markdown(f"### Area Chart: `{y}` vs `{x}`")
                 if color:
                     st.markdown(f"Grouped by `{color}`")
                 st.plotly_chart(
-                    fig_histogram(df=df, x=x, color=color, nbins=n_bins),
+                    fig_area_chart(df=df, x=x, y=y, color=color),
                     use_container_width=True,
                 )
             else:
                 st.warning(
-                    "Please select an X variable (column) to generate the histogram."
+                    "Please select both X and Y variables (columns) to generate the area chart."
                 )
 
         with tab4:
@@ -210,8 +210,8 @@ def data_exploration():
             st.markdown(
                 "Visualize relationships between two numerical variables in your dataset using a scatter plot. "
                 "You must select both X and Y variables (columns) to generate the chart. "
-                "Optionally, you can group the points by another column using the color option, "
-                "and adjust marker size by a selected target variable."
+                "Optionally, you can group the points by another column using the **color** option, "
+                "and adjust marker size by a selected **target** variable."
             )
 
             if x and y:
@@ -233,7 +233,7 @@ def data_exploration():
             st.header("🔥 Heatmap")
             st.markdown(
                 "Analyze correlations between numerical variables in your dataset using a heatmap. "
-                "If you select a target variable, the heatmap will show correlations with that variable. "
+                "If you select a **target** variable, the heatmap will show correlations with that variable. "
                 "If no target is selected, the full correlation matrix will be displayed."
             )
 
@@ -253,8 +253,8 @@ def data_exploration():
             st.header("🥧 Pie Chart")
             st.markdown(
                 "Visualize the distribution of values for a selected column in your dataset as a pie chart. "
-                "You must select a target variable (column) to generate the chart. "
-                "Optionally, you can group the slices by another column using the color option."
+                "You must select a **target** variable (column) to generate the chart. "
+                "Optionally, you can group the slices by another column using the **color** option."
             )
 
             if target:
