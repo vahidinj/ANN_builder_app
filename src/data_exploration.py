@@ -133,24 +133,42 @@ def data_exploration():
                 "📊 Histogram",
                 "📦 Box Plot",
                 "📉 Area Chart",
-                "📍 Scatter Plot",
+                "🫧 Scatter Plot",
                 "🔥 Heatmap",
                 "🥧 Pi Chart",
             ]
         )
 
         with tab1:
-            st.header("📊 Histogram")
             st.markdown(
-                "Explore the distribution of a numerical variable in your dataset using a histogram. "
-                "You must select an X variable (column) to generate the chart. "
-                "Optionally, you can group the bars by another column using the **color** option."
+                """
+                <h2 style='color:#4F8BF9; font-weight:700;'>📊 Histogram</h2>
+                <div style='color:#555; font-size:1.1em; margin-bottom:10px;'>
+                    Explore the distribution of a <b>numerical variable</b> using a histogram.<br>
+                    <span style='color:#4F8BF9;'>Select an <b>X variable</b></span> to generate the chart.<br>
+                    Optionally, group bars by another column using the <b>color</b> option.
+                </div>
+                """,
+                unsafe_allow_html=True,
             )
 
             if x:
-                st.markdown(f"### Histogram of `{x}`")
+                st.markdown(
+                    f"<h4 style='margin-top:0;'>Histogram of <span style='color:#4F8BF9;'>{x}</span></h4>",
+                    unsafe_allow_html=True,
+                )
                 if color:
-                    st.markdown(f"Grouped by `{color}`")
+                    st.markdown(
+                        f"<span style='color:#888;'>Grouped by <b>{color}</b></span>",
+                        unsafe_allow_html=True,
+                    )
+                st.success(
+                    "#### Histogram Interpretation\n"
+                    "- 📈 **Distribution:** Shows the spread of values for the selected variable.\n"
+                    "- 🏔️ **Shape:** Detect skewness, modality, and outliers.\n"
+                    "- 📊 **Frequency:** Bar height = count in each range."
+                )
+                st.divider()
                 st.plotly_chart(
                     fig_histogram(df=df, x=x, color=color, nbins=n_bins),
                     use_container_width=True,
@@ -161,17 +179,34 @@ def data_exploration():
                 )
 
         with tab2:
-            st.header("📦 Box Plot")
             st.markdown(
-                "Analyze the distribution of a numerical variable and detect outliers using a box plot. "
-                "You must select a **target** variable (numerical column) to generate the chart. "
-                "Optionally, you can group the boxes by another column using the **color** option."
+                """
+                <h2 style='color:#A259EC; font-weight:700;'>📦 Box Plot</h2>
+                <div style='color:#555; font-size:1.1em; margin-bottom:10px;'>
+                    Analyze the distribution of a <b>numerical variable</b> and detect outliers using a box plot.<br>
+                    <span style='color:#A259EC;'>Select a <b>target variable</b></span> to generate the chart.<br>
+                    Optionally, group boxes by another column using the <b>color</b> option.
+                </div>
+                """,
+                unsafe_allow_html=True,
             )
-
             if target:
-                st.markdown(f"### Box Plot for `{target}`")
+                st.markdown(
+                    f"<h4 style='margin-top:0;'>Box Plot for <span style='color:#A259EC;'>{target}</span></h4>",
+                    unsafe_allow_html=True,
+                )
                 if color:
-                    st.markdown(f"Grouped by `{color}`")
+                    st.markdown(
+                        f"<span style='color:#888;'>Grouped by <b>{color}</b></span>",
+                        unsafe_allow_html=True,
+                    )
+                st.success(
+                    "#### Box Plot Interpretation\n"
+                    "- 📦 **Distribution:** Visualizes the spread, median, and outliers.\n"
+                    "- 📏 **IQR:** Box shows the interquartile range (IQR); line inside is the median.\n"
+                    "- ⚠️ **Outliers:** Points outside whiskers are potential outliers."
+                )
+                st.divider()
                 try:
                     st.plotly_chart(
                         fig_box_plt(df=df, column=target, group_by=color),
@@ -185,17 +220,34 @@ def data_exploration():
                 )
 
         with tab3:
-            st.header("📉 Area Chart")
             st.markdown(
-                "Visualize trends over time or across categories using an area chart. "
-                "You must select both X and Y variables (columns) to generate the chart. "
-                "Optionally, you can group the areas by another column using the **color** option."
+                """
+                <h2 style='color:#F24E1E; font-weight:700;'>📈 Area Chart</h2>
+                <div style='color:#555; font-size:1.1em; margin-bottom:10px;'>
+                    Visualize trends over time or across categories using an area chart.<br>
+                    <span style='color:#F24E1E;'>Select <b>X</b> and <b>Y</b> variables</span> to generate the chart.<br>
+                    Optionally, group areas by another column using the <b>color</b> option.
+                </div>
+                """,
+                unsafe_allow_html=True,
             )
-
             if x and y:
-                st.markdown(f"### Area Chart: `{y}` vs `{x}`")
+                st.markdown(
+                    f"<h4 style='margin-top:0;'>Area Chart: <span style='color:#F24E1E;'>{y}</span> vs <span style='color:#F24E1E;'>{x}</span></h4>",
+                    unsafe_allow_html=True,
+                )
                 if color:
-                    st.markdown(f"Grouped by `{color}`")
+                    st.markdown(
+                        f"<span style='color:#888;'>Grouped by <b>{color}</b></span>",
+                        unsafe_allow_html=True,
+                    )
+                st.success(
+                    "#### Area Chart Interpretation\n"
+                    "- 📈 **Trend:** Shows how a numerical variable (Y) changes over another (X).\n"
+                    "- 🗂️ **Cumulative:** Useful for cumulative totals or trends.\n"
+                    "- 🎨 **Grouping:** Color reveals differences between categories."
+                )
+                st.divider()
                 st.plotly_chart(
                     fig_area_chart(df=df, x=x, y=y, color=color),
                     use_container_width=True,
@@ -206,20 +258,39 @@ def data_exploration():
                 )
 
         with tab4:
-            st.header("📍 Scatter Plot")
             st.markdown(
-                "Visualize relationships between two numerical variables in your dataset using a scatter plot. "
-                "You must select both X and Y variables (columns) to generate the chart. "
-                "Optionally, you can group the points by another column using the **color** option, "
-                "and adjust marker size by a selected **target** variable."
+                """
+                <h2 style='color:#2ECC71; font-weight:700;'>🫧 Scatter Plot</h2>
+                <div style='color:#555; font-size:1.1em; margin-bottom:10px;'>
+                    Visualize relationships between two <b>numerical variables</b> using a scatter plot.<br>
+                    <span style='color:#2ECC71;'>Select <b>X</b> and <b>Y</b> variables</span> to generate the chart.<br>
+                    Optionally, group points by <b>color</b> and adjust marker size by <b>target</b>.
+                </div>
+                """,
+                unsafe_allow_html=True,
             )
-
             if x and y:
-                st.markdown(f"### Scatter Plot: `{x}` vs `{y}`")
+                st.markdown(
+                    f"<h4 style='margin-top:0;'>Scatter Plot: <span style='color:#2ECC71;'>{x}</span> vs <span style='color:#2ECC71;'>{y}</span></h4>",
+                    unsafe_allow_html=True,
+                )
                 if color:
-                    st.markdown(f"Grouped by `{color}`")
+                    st.markdown(
+                        f"<span style='color:#888;'>Grouped by <b>{color}</b></span>",
+                        unsafe_allow_html=True,
+                    )
                 if target:
-                    st.markdown(f"Marker size by `{target}`")
+                    st.markdown(
+                        f"<span style='color:#888;'>Marker size by <b>{target}</b></span>",
+                        unsafe_allow_html=True,
+                    )
+                st.success(
+                    "#### Scatter Plot Interpretation\n"
+                    "- 🔗 **Relationship:** Shows the relationship between two numerical variables.\n"
+                    "- 🧩 **Patterns:** Patterns may indicate correlation or clusters.\n"
+                    "- 🎨 **Grouping:** Color/size reveals additional structure."
+                )
+                st.divider()
                 st.plotly_chart(
                     fig_scatter(df=df, x=x, y=y, color=color, size=target),
                     use_container_width=True,
@@ -230,18 +301,33 @@ def data_exploration():
                 )
 
         with tab5:
-            st.header("🔥 Heatmap")
             st.markdown(
-                "Analyze correlations between numerical variables in your dataset using a heatmap. "
-                "If you select a **target** variable, the heatmap will show correlations with that variable. "
-                "If no target is selected, the full correlation matrix will be displayed."
+                """
+                <h2 style='color:#FF6F61; font-weight:700;'>🔥 Heatmap</h2>
+                <div style='color:#555; font-size:1.1em; margin-bottom:10px;'>
+                    Analyze correlations between <b>numerical variables</b> using a heatmap.<br>
+                    <span style='color:#FF6F61;'>Select a <b>target</b> variable</span> for targeted correlations, or view the full matrix.
+                </div>
+                """,
+                unsafe_allow_html=True,
             )
-
             if target:
-                st.markdown(f"### Correlation Heatmap with `{target}`")
+                st.markdown(
+                    f"<h4 style='margin-top:0;'>Correlation Heatmap with <span style='color:#FF6F61;'>{target}</span></h4>",
+                    unsafe_allow_html=True,
+                )
             else:
-                st.markdown("### Full Correlation Matrix Heatmap")
-
+                st.markdown(
+                    "<h4 style='margin-top:0;'>Full Correlation Matrix Heatmap</h4>",
+                    unsafe_allow_html=True,
+                )
+            st.success(
+                "#### Heatmap Interpretation\n"
+                "- 🟪 **Correlation:** Visualizes correlation between numerical variables.\n"
+                "- 🌗 **Strength:** Darker/lighter = stronger positive/negative relationships.\n"
+                "- 🕵️ **Insight:** Useful for identifying multicollinearity or feature relationships."
+            )
+            st.divider()
             try:
                 st.plotly_chart(
                     fig_heat_map(df=df, target=target), use_container_width=True
@@ -250,17 +336,34 @@ def data_exploration():
                 st.warning(str(e))
 
         with tab6:
-            st.header("🥧 Pie Chart")
             st.markdown(
-                "Visualize the distribution of values for a selected column in your dataset as a pie chart. "
-                "You must select a **target** variable (column) to generate the chart. "
-                "Optionally, you can group the slices by another column using the **color** option."
+                """
+                <h2 style='color:#F7B731; font-weight:700;'>🥧 Pie Chart</h2>
+                <div style='color:#555; font-size:1.1em; margin-bottom:10px;'>
+                    Visualize the distribution of values for a selected column as a pie chart.<br>
+                    <span style='color:#F7B731;'>Select a <b>target</b> variable</span> to generate the chart.<br>
+                    Optionally, group slices by another column using the <b>color</b> option.
+                </div>
+                """,
+                unsafe_allow_html=True,
             )
-
             if target:
-                st.markdown(f"### Pie Chart for `{target}`")
+                st.markdown(
+                    f"<h4 style='margin-top:0;'>Pie Chart for <span style='color:#F7B731;'>{target}</span></h4>",
+                    unsafe_allow_html=True,
+                )
                 if color:
-                    st.markdown(f"Grouped by `{color}`")
+                    st.markdown(
+                        f"<span style='color:#888;'>Grouped by <b>{color}</b></span>",
+                        unsafe_allow_html=True,
+                    )
+                st.success(
+                    "#### Pie Chart Interpretation\n"
+                    "- 🥧 **Proportion:** Shows the proportion of each category within a variable.\n"
+                    "- 📊 **Distribution:** Useful for visualizing categorical distributions.\n"
+                    "- 🎨 **Grouping:** Color shows sub-category breakdowns."
+                )
+                st.divider()
                 st.plotly_chart(
                     fig_pi_chart(df=df, target=target, color=color),
                     use_container_width=True,

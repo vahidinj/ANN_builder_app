@@ -22,7 +22,7 @@ def fig_pi_chart(df: pd.DataFrame, target: str, color: str = None) -> go.Figure:
         data_frame=df,
         names=target,
         color=color if color in df.columns else None,
-        # title=f"Pie Chart for {target}" + (f" grouped by {color}" if color else ""),
+        title=f"Pie Chart for {target}" + (f" grouped by {color}" if color else ""),
     )
 
     fig.update_layout(
@@ -60,7 +60,7 @@ def fig_area_chart(df: pd.DataFrame, x: str, y: str, color: str = None) -> go.Fi
         x=x,
         y=y,
         color=color,
-        # title=f"Area Chart: {y} vs {x}" + (f" by {color}" if color else ""),
+        title=f"Area Chart: {y} vs {x}" + (f" by {color}" if color else ""),
         labels={x: x, y: y},
         line_shape="spline",
     )
@@ -93,7 +93,7 @@ def fig_histogram(df: pd.DataFrame, x: str, color: str, nbins: int) -> go.Figure
         x=x,
         color=color,
         nbins=nbins,
-        # title=f"Distribution of {x} by {color} Status",
+        title=f"Distribution of {x} by {color} Status",
         # color_discrete_sequence=px.colors.qualitative.Set2,
     )
     return fig
@@ -116,11 +116,11 @@ def fig_scatter(
         go.Figure: The generated scatter plot.
     """
     # Generate a dynamic title
-    # title = (
-    #     f"Scatter Plot: {x} vs {y}"
-    #     + (f" by {color}" if color else "")
-    #     + (f" with Marker Size {size}" if size else "")
-    # )
+    title = (
+        f"Scatter Plot: {x} vs {y}"
+        + (f" by {color}" if color else "")
+        + (f" with Marker Size {size}" if size else "")
+    )
 
     # Create the scatter plot
     fig = px.scatter(
@@ -129,7 +129,7 @@ def fig_scatter(
         y=y,
         color=color,
         size=size,
-        # title=title,
+        title=title,
         # color_discrete_sequence=px.colors.qualitative.Bold,
     )
 
@@ -288,7 +288,7 @@ def metrics_bar_chart(class_report: dict) -> go.Figure:
     fig.update_layout(
         title=dict(
             text="Class-wise Metrics",
-            font=dict(size=16, family="Arial", color="black"),
+            # font=dict(size=16, family="Arial", color="black"),
         ),
         xaxis_title="Class",
         yaxis_title="Score",
@@ -338,7 +338,7 @@ def cm_map(data_cm: np.array, class_labels: list) -> go.Figure:
     fig.update_layout(
         title=dict(
             text="Confusion Matrix",
-            font=dict(size=16, family="Arial", color="black"),
+            # font=dict(size=16, family="Arial", color="black"),
         ),
         xaxis_title="Predicted Labels",
         yaxis_title="True Labels",
@@ -463,7 +463,7 @@ def plot_error_metrics(mse, mae, r2) -> go.Figure:
     fig.update_layout(
         title=dict(
             text="Regression Error Metrics",
-            font=dict(size=16, family="Arial", color="black"),
+            # font=dict(size=16, family="Arial", color="black"),
         ),
         xaxis=dict(
             title="Metric",
@@ -542,7 +542,7 @@ def plot_predicted_vs_actual(y_test, y_pred) -> go.Figure:
                 "Predicted vs. Actual Values"
                 f"<br><span style='font-size:12px'>R²={r2:.3f}, MAE={mae:.3f}, RMSE={rmse:.3f}</span>"
             ),
-            font=dict(size=16, family="Arial", color="black"),
+            # font=dict(size=16, family="Arial", color="black"),
         ),
         xaxis=dict(
             title="Actual Values",
@@ -635,7 +635,7 @@ def plot_cumulative_gain(
     fig.update_layout(
         title=dict(
             text="Cumulative Gain Chart",
-            font=dict(size=16, family="Arial", color="black"),
+            # font=dict(size=16, family="Arial", color="black"),
         ),
         xaxis=dict(
             title="Cumulative Predicted Proportion",
@@ -660,4 +660,54 @@ def plot_cumulative_gain(
         # margin=dict(l=40, r=40, t=40, b=40),
     )
 
+    return fig
+
+
+def plot_loss_curve(
+    train_loss: list, val_loss: list = None, title: str = "Loss Curve"
+) -> go.Figure:
+    """
+    Plots the training (and optionally validation) loss curve over epochs.
+
+    Args:
+        train_loss (list or np.ndarray): Training loss values per epoch.
+        val_loss (list or np.ndarray, optional): Validation loss values per epoch.
+        title (str): Plot title.
+
+    Returns:
+        plotly.graph_objects.Figure: The generated loss curve plot.
+    """
+    epochs = list(range(1, len(train_loss) + 1))
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
+            x=epochs,
+            y=train_loss,
+            mode="lines+markers",
+            name="Training Loss",
+            line=dict(color="blue"),
+        )
+    )
+    if val_loss is not None:
+        fig.add_trace(
+            go.Scatter(
+                x=epochs,
+                y=val_loss,
+                mode="lines+markers",
+                name="Validation Loss",
+                line=dict(color="orange"),
+            )
+        )
+    fig.update_layout(
+        title=dict(
+            text=title,
+            # font=dict(size=16, family="Arial", color="black"),
+        ),
+        xaxis_title="Epoch",
+        yaxis_title="Loss",
+        xaxis=dict(showgrid=False, zeroline=True),
+        yaxis=dict(showgrid=True, zeroline=True),
+        legend_title="Curve",
+        # margin=dict(l=40, r=40, t=40, b=40),
+    )
     return fig

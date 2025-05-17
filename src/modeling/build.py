@@ -1,16 +1,11 @@
-# import pandas as pd
+import os
 import numpy as np
 import tensorflow as tf
 import pickle
-# from sklearn.preprocessing import StandardScaler, OneHotEncoder
-# from sklearn.compose import ColumnTransformer
-# from sklearn.model_selection import train_test_split
-# # from sklearn.metrics import confusion_matrix, accuracy_score, classification_report
-
 
 def build_ann(
-    X_train: np.array,
-    y_train: np.array,
+    X_train: np.ndarray,
+    y_train: np.ndarray,
     layers_units: list[int],
     output_units: int,
     hidden_activation: str,
@@ -18,41 +13,67 @@ def build_ann(
     loss: str,
     batch_size: int,
     epochs: int,
+    validation_split: float = 0.2,
+    model_path: str = "models/ann_model.pkl",
+    history_path: str = "reports/loss_history.pkl",
 ) -> tf.keras.models.Sequential:
     """
-    Builds an ANN with a variable number of units per layer.
+    Builds, trains, and saves an ANN with a variable number of units per layer.
 
     Args:
-        layers_units (list[int]): List of integers specifying the number of units in each layer.
-        activation (str): Activation function for the hidden layers.
-        output_units (int): Number of units in the output layer.
-        output_activation (str): Activation function for the output layer.
-        batch_size (int): Batch size for training.
-        epochs (int): Number of epochs for training.
+        X_train (np.ndarray): Training features.
+        y_train (np.ndarray): Training labels.
+        layers_units (list[int]): Units per hidden layer.
+        output_units (int): Output layer units.
+        hidden_activation (str): Activation for hidden layers.
+        output_activation (str): Activation for output layer.
+        loss (str): Loss function.
+        batch_size (int): Batch size.
+        epochs (int): Number of epochs.
+        validation_split (float): Fraction of training data for validation.
+        model_path (str): Path to save the model.
+        history_path (str): Path to save the loss history.
 
     Returns:
-        tf.keras.models.Sequential: Compiled ANN model.
+        tf.keras.models.Sequential: Trained ANN model.
     """
+    # Ensure output directories exist
+    os.makedirs(os.path.dirname(model_path), exist_ok=True)
+    os.makedirs(os.path.dirname(history_path), exist_ok=True)
+
     ann = tf.keras.models.Sequential()
     ann.add(tf.keras.layers.InputLayer(input_shape=(X_train.shape[1],)))
 
     for units in layers_units:
-        ann.add(tf.keras.layers.Dense(units=units, activation=str(hidden_activation)))
+        ann.add(tf.keras.layers.Dense(units=units, activation=hidden_activation))
 
-    ann.add(
-        tf.keras.layers.Dense(units=output_units, activation=str(output_activation))
+    ann.add(tf.keras.layers.Dense(units=output_units, activation=output_activation))
+    ann.compile(optimizer="adam", loss=loss)
+
+    history = ann.fit(
+        X_train,
+        y_train,
+        batch_size=batch_size,
+        epochs=epochs,
+        verbose=1,
+        validation_split=validation_split,
     )
-    ann.compile(
-        optimizer="adam",
-        loss=str(loss),
-    )
 
-    ann.fit(X_train, y_train, batch_size=batch_size, epochs=epochs)
-
-    model_filename = "models/ann_model.pkl"
-    with open(model_filename, "wb") as file:
+    # Save model
+    with open(model_path, "wb") as file:
         pickle.dump(ann, file)
 
+    # Save loss history
+    with open(history_path, "wb") as f:
+        pickle.dump(
+            {
+                "train_loss": history.history["loss"],
+                "val_loss": history.history.get("val_loss", []),
+            },
+            f,
+        )
+
+    return ann
 
 # df = pd.read_csv("data/processed/Churn.csv")
 # df.head()

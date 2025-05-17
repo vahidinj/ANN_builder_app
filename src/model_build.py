@@ -1,4 +1,5 @@
 import streamlit as st
+import pickle
 import time
 import io
 import pandas as pd
@@ -33,11 +34,14 @@ from visualization.visualize import (
     plot_error_metrics,
     plot_predicted_vs_actual,
     plot_cumulative_gain,
+    plot_loss_curve,
 )
 
 
 def build():
-    st.markdown("Upload your dataset to begin the preprocessing and model-building process.")
+    st.markdown(
+        "Upload your dataset to begin the preprocessing and model-building process."
+    )
     upload_tab, preprocess_tab, build_train_tab, predict_tab = st.tabs(
         [
             "Upload Training Data",
@@ -50,21 +54,25 @@ def build():
     with upload_tab:
         st.header("📂 Upload Your Dataset")
 
-        uploaded_file = st.file_uploader("📥 Upload data for model training (CSV only):", type="csv")
-    
+        uploaded_file = st.file_uploader(
+            "📥 Upload data for model training (CSV only):", type="csv"
+        )
+
         if uploaded_file is not None:
             try:
                 with st.spinner("Reading the uploaded file..."):
                     uploaded_df = pd.read_csv(uploaded_file)
 
-                st.session_state['uploaded_df'] = uploaded_df
+                st.session_state["uploaded_df"] = uploaded_df
                 st.success("✅ File uploaded successfully!")
 
                 st.markdown("### 📋 Data Preview")
                 st.dataframe(uploaded_df.head(5), hide_index=True)
 
                 num_feat = uploaded_df.select_dtypes(include=["float", "int"]).columns
-                cat_feat = uploaded_df.select_dtypes(include=["category", "object"]).columns
+                cat_feat = uploaded_df.select_dtypes(
+                    include=["category", "object"]
+                ).columns
 
                 col1, col2 = st.columns([1, 1])
                 with col1:
@@ -74,15 +82,17 @@ def build():
                             st.table(pd.DataFrame({"**Numerical Features**": num_feat}))
                         else:
                             st.info("No numerical features found in the dataset.")
-    
+
                 with col2:
                     with st.expander("🔤 Categorical Features", expanded=False):
                         if len(cat_feat) > 0:
                             st.write(f"**{len(cat_feat)} Categorical Features Found:**")
-                            st.table(pd.DataFrame({"**Categorical Features**": cat_feat}))
+                            st.table(
+                                pd.DataFrame({"**Categorical Features**": cat_feat})
+                            )
                         else:
                             st.info("No categorical features found in the dataset.")
-    
+
             except Exception as e:
                 st.error(f"⚠️ An error occurred while reading the file: {e}")
         else:
@@ -92,7 +102,9 @@ def build():
         st.header("⚙️ Configure Preprocessing")
 
         if "uploaded_df" not in st.session_state:
-            st.warning("⚠️ Please upload a dataset in the 'Upload Training Data' tab first.")
+            st.warning(
+                "⚠️ Please upload a dataset in the 'Upload Training Data' tab first."
+            )
             return
 
         uploaded_df = st.session_state["uploaded_df"]
@@ -105,8 +117,8 @@ def build():
                     help="Select the column that represents the target variable.",
                 )
 
-                st.session_state['target'] = target
-                
+                st.session_state["target"] = target
+
             with st.expander("🔀 Train-Test Split & Random State", expanded=True):
                 col1, col2 = st.columns([1, 1])
                 with col1:
@@ -171,13 +183,15 @@ def build():
 
     with build_train_tab:
         st.header("🛠️ Build and Train the Model")
-        
-        if 'uploaded_df' not in st.session_state:
-            st.warning('⚠️ Please upload a dataset in the "Upload Training Data" tab first.')
+
+        if "uploaded_df" not in st.session_state:
+            st.warning(
+                '⚠️ Please upload a dataset in the "Upload Training Data" tab first.'
+            )
             return
-        
-        uploaded_df = st.session_state['uploaded_df']
-        
+
+        uploaded_df = st.session_state["uploaded_df"]
+
         if "preprocessing" in st.session_state:
             options = st.session_state["preprocessing"]
             target = options["target"]
@@ -214,8 +228,8 @@ def build():
                 ]
             )
 
-            st.session_state['preprocessor'] = preprocessor
-            st.session_state['X_columns'] = df_features.columns.tolist()
+            st.session_state["preprocessor"] = preprocessor
+            st.session_state["X_columns"] = df_features.columns.tolist()
 
             X = uploaded_df.drop(columns=[target])
             y = uploaded_df[target]
@@ -235,7 +249,7 @@ def build():
             X_test = np.array(X_test)
             y_train = np.array(y_train)
             y_test = np.array(y_test)
-            
+
             st.session_state["X_train"] = X_train
             st.session_state["y_train"] = y_train
             st.session_state["X_test"] = X_test
@@ -344,8 +358,8 @@ def build():
                         help="Choose the type of task. For regression, no threshold is required.",
                     )
 
-                    st.session_state['task_type'] = task_type
-                    
+                    st.session_state["task_type"] = task_type
+
                     if task_type == "Binary Classification":
                         pred_threshold = st.number_input(
                             "Select Prediction Threshold",
@@ -406,14 +420,15 @@ def build():
                         if "model_config" in st.session_state:
                             try:
                                 with st.spinner("Training the model... Please wait."):
-                                    
                                     X_train = st.session_state.get("X_train", None)
                                     y_train = st.session_state.get("y_train", None)
 
                                     if X_train is None or y_train is None:
-                                        st.warning("⚠️ Please preprocess and split the data in the 'Build & Train Model' tab first.")
+                                        st.warning(
+                                            "⚠️ Please preprocess and split the data in the 'Build & Train Model' tab first."
+                                        )
                                         return
-                                    
+
                                     build_ann(
                                         X_train=X_train,
                                         y_train=y_train,
@@ -445,21 +460,24 @@ def build():
 
             with test_tab:
                 st.header("📈 Model Performance")
-                task_type = st.session_state.get('task_type', None)
+                task_type = st.session_state.get("task_type", None)
                 X_train = st.session_state.get("X_train", None)
                 y_train = st.session_state.get("y_train", None)
                 X_test = st.session_state.get("X_test", None)
                 y_test = st.session_state.get("y_test", None)
 
-                
                 if task_type is None:
-                    st.warning("⚠️ Please configure the model in the 'Build & Train Model' tab first.")
+                    st.warning(
+                        "⚠️ Please configure the model in the 'Build & Train Model' tab first."
+                    )
                     return
 
                 if X_test is None or y_test is None:
-                    st.warning("⚠️ Please preprocess and split the data in the 'Build & Train Model' tab first.")
+                    st.warning(
+                        "⚠️ Please preprocess and split the data in the 'Build & Train Model' tab first."
+                    )
                     return
-                
+
                 try:
                     with st.spinner("Model is making predictions... Please wait."):
                         if st.button("Run Model", icon="🏃‍♀️"):
@@ -469,18 +487,24 @@ def build():
                             y_pred = predict(
                                 X_input=X_test,
                                 task_type=task_type,
-                                pred_threshold=st.session_state["model_config"]["pred_threshold"],
+                                pred_threshold=st.session_state["model_config"][
+                                    "pred_threshold"
+                                ],
                             )
-                            
+
                             # Ensure y_pred is 1D
-                            if isinstance(y_pred, np.ndarray) and y_pred.ndim > 1 and y_pred.shape[1] == 1:
+                            if (
+                                isinstance(y_pred, np.ndarray)
+                                and y_pred.ndim > 1
+                                and y_pred.shape[1] == 1
+                            ):
                                 y_pred = y_pred.ravel()
 
-                            st.write(f"DEBUG: y_test shape: {y_test.shape}")
-                            st.write(f"DEBUG: y_pred shape: {y_pred.shape}")
-                            
-                            st.session_state['y_pred'] = y_pred
-                            
+                            # st.write(f"DEBUG: y_test shape: {y_test.shape}")
+                            # st.write(f"DEBUG: y_pred shape: {y_pred.shape}")
+
+                            st.session_state["y_pred"] = y_pred
+
                             execution_time = time.time() - start_time
 
                             if task_type == "Binary Classification":
@@ -547,46 +571,103 @@ def build():
                             with test_col2:
                                 st.subheader("📊 Model Evaluation Metrics")
 
+                                try:
+                                    with open("reports/loss_history.pkl", "rb") as file:
+                                        loss_history = pickle.load(file)
+                                        train_loss = loss_history.get("train_loss", [])
+                                        val_loss = loss_history.get("val_loss", [])
+                                except Exception:
+                                    train_loss, val_loss = [], []
+
+                                with st.expander("Loss Curve", expanded=True):
+                                    st.markdown("""
+                                                **`Loss Curve Interpretation:`**
+                                                - The loss curve shows how the model's error changes during training.
+                                                - The blue line is the training loss; the orange line (if present) is the validation loss.
+                                                - Ideally, both lines should decrease and stabilize. If the validation loss rises while training loss drops, the model may be overfitting.
+                                                """)
+                                    st.markdown("---")
+                                    st.plotly_chart(
+                                        plot_loss_curve(train_loss, val_loss)
+                                    )
+
                                 if task_type == "Binary Classification":
                                     with st.expander("Confusion Matrix", expanded=True):
+                                        st.markdown("""
+                                        **`Confusion Matrix Interpretation:`**
+                                        - Shows the counts of true positives, true negatives, false positives, and false negatives.
+                                        - Diagonal values indicate correct predictions; off-diagonal values indicate misclassifications.
+                                        """)
+                                        st.markdown("---")
                                         st.plotly_chart(
                                             cm_map(
                                                 data_cm=cm, class_labels=class_labels
-                                            ), use_container_width=True
+                                            ),
+                                            use_container_width=True,
                                         )
 
                                     with st.expander(
                                         "Classification Metrics Bar Chart",
                                         expanded=True,
                                     ):
+                                        st.markdown("""
+                                        **`Classification Metrics Bar Chart Interpretation:`**
+                                        - Visualizes key metrics such as precision, recall, and F1-score for each class.
+                                        - Higher values indicate better model performance for that metric.
+                                        """)
+                                        st.markdown("---")
                                         st.plotly_chart(
-                                            metrics_bar_chart(class_report=class_report), use_container_width=True
+                                            metrics_bar_chart(
+                                                class_report=class_report
+                                            ),
+                                            use_container_width=True,
                                         )
 
                                 elif task_type == "Regression":
                                     with st.expander(
                                         "Error Metrics Bar Chart", expanded=True
                                     ):
+                                        st.markdown("""
+                                        **`Error Metrics Bar Chart Interpretation:`**
+                                        - Displays regression error metrics such as Mean Squared Error (MSE), Mean Absolute Error (MAE), and R² Score.
+                                        - Lower error values and higher R² indicate better model performance.
+                                        """)
+                                        st.markdown("---")
                                         st.plotly_chart(
-                                            plot_error_metrics(mse, mae, r2), use_container_width=True
+                                            plot_error_metrics(mse, mae, r2),
+                                            use_container_width=True,
                                         )
 
                                     with st.expander(
                                         "Predicted vs. Actual Values", expanded=True
                                     ):
+                                        st.markdown("""
+                                        **`Predicted vs. Actual Values Interpretation:`**
+                                        - Compares the model's predictions to the true values.
+                                        - Points close to the diagonal line indicate accurate predictions.
+                                        """)
+                                        st.markdown("---")
                                         st.plotly_chart(
                                             plot_predicted_vs_actual(
                                                 y_test=y_test, y_pred=y_pred
-                                            ), use_container_width=True
+                                            ),
+                                            use_container_width=True,
                                         )
 
                                     with st.expander(
                                         "Cumulative Gain Chart", expanded=True
                                     ):
+                                        st.markdown("""
+                                        **`Cumulative Gain Chart Interpretation:`**
+                                        - Shows the cumulative proportion of actual positive instances captured as you move through the data sorted by predicted probability.
+                                        - The further the model curve is above the baseline, the better the model's ability to rank positive cases.
+                                        """)
+                                        st.markdown("---")
                                         st.plotly_chart(
                                             plot_cumulative_gain(
                                                 y_test=y_test, y_pred=y_pred
-                                            ), use_container_width=True
+                                            ),
+                                            use_container_width=True,
                                         )
                         else:
                             st.info(
@@ -598,30 +679,40 @@ def build():
 
     with predict_tab:
         st.header("📥 Predict & Download Results")
-        
+
         if "model_config" not in st.session_state:
-            st.warning("⚠️ Please configure the model in the 'Build & Train Model' tab first.")
+            st.warning(
+                "⚠️ Please configure the model in the 'Build & Train Model' tab first."
+            )
             return
-        
+
         target = st.session_state.get("target", None)
         X_columns = st.session_state.get("X_columns", None)
         preprocessor = st.session_state.get("preprocessor", None)
-    
+
         # st.write("Debug: X_columns in session state:", X_columns)
         # st.write("Debug: Preprocessor in session state:", preprocessor)
-    
+
         if X_columns is None or preprocessor is None:
-            st.warning("⚠️ Please configure and train the model in the **'Build & Train Model'** tab first.")
+            st.warning(
+                "⚠️ Please configure and train the model in the **'Build & Train Model'** tab first."
+            )
             return
-    
+
         with st.expander("📂 Upload Dataset for Predictions", expanded=True):
-            new_data_file = st.file_uploader("Upload new data for predictions:", type="csv")
-            
+            new_data_file = st.file_uploader(
+                "Upload new data for predictions:", type="csv"
+            )
+
             if new_data_file is not None:
                 try:
                     new_data_df = pd.read_csv(new_data_file)
-                    
-                    missing_columns = [col for col in X_columns if col != target and col not in new_data_df.columns]
+
+                    missing_columns = [
+                        col
+                        for col in X_columns
+                        if col != target and col not in new_data_df.columns
+                    ]
                     if missing_columns:
                         st.warning(
                             f"⛔️ The uploaded file is missing the following required columns: **{missing_columns}**. The model was training with asformentioned columns in the **'Build & Train Model'** tab."
@@ -635,21 +726,33 @@ def build():
 
         with st.expander("🔮 Generate Predictions", expanded=True):
             if new_data_file is None:
-                st.warning("⚠️ Please upload data in the **'Upload Dataset for Predictions'** section first.")
+                st.warning(
+                    "⚠️ Please upload data in the **'Upload Dataset for Predictions'** section first."
+                )
             else:
-                st.info(f'The model is prepared to predict the **{st.session_state.get("target", None)}**')
-        
-                if st.button('Generate Predictions'):
+                st.info(
+                    f"The model is prepared to predict the **{st.session_state.get('target', None)}**"
+                )
+
+                if st.button("Generate Predictions"):
                     try:
-                        new_processed_df = st.session_state.get("preprocessor", None).transform(new_data_df)
+                        new_processed_df = st.session_state.get(
+                            "preprocessor", None
+                        ).transform(new_data_df)
                         predictions = predict(
                             X_input=new_processed_df,
                             task_type=st.session_state["task_type"],
-                            pred_threshold=st.session_state["model_config"]["pred_threshold"],
+                            pred_threshold=st.session_state["model_config"][
+                                "pred_threshold"
+                            ],
                         )
-                        new_data_df[f"Predicted {st.session_state.get('target', None)}"] = predictions
+                        new_data_df[
+                            f"Predicted {st.session_state.get('target', None)}"
+                        ] = predictions
                         st.success("✅ Predictions generated successfully!")
-                        st.write(f"📊 Predictions for the **{st.session_state.get('target', None)}** variable:")
+                        st.write(
+                            f"📊 Predictions for the **{st.session_state.get('target', None)}** variable:"
+                        )
                         st.dataframe(new_data_df, hide_index=True)
 
                         csv_buffer = io.StringIO()
@@ -663,4 +766,6 @@ def build():
                             mime="text/csv",
                         )
                     except Exception as e:
-                        st.error(f"⚠️ An error occurred during prediction or download preparation: {e}")
+                        st.error(
+                            f"⚠️ An error occurred during prediction or download preparation: {e}"
+                        )

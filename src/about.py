@@ -1,14 +1,28 @@
 import streamlit as st
 
 def about_page():
-    st.markdown("""
+    st.markdown(
+        """
     <style>
+    /* Force dark mode for about-section */
+    @media (prefers-color-scheme: dark) {
+        .about-section {
+            background-color: #05050a !important;  /* Even darker gray/near-black */
+            border-color: #181825 !important;
+            color: #f7f7fa !important;
+        }
+        .about-section * {
+            color: #f7f7fa !important;
+        }
+    }
+    /* Light mode styling */
     .about-section {
         background-color: #f7f7fa;
         padding: 1.5em;
         border-radius: 10px;
         border: 1px solid #e0e0e0;
         margin-bottom: 1.5em;
+        color: #23233b;
     }
     .feature-list li {
         margin-bottom: 0.5em;
@@ -53,4 +67,6 @@ def about_page():
         <b>Author:</b> Vahidin (Dean) Jupic<br>
         <b>Version:</b> 0.9.0
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
